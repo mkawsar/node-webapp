@@ -27,7 +27,7 @@ module.exports = (param) => {
     });
 
     router.use('/speakers', speakerRoute(param));
-    router.use('/feedback', feedbackRoute());
+    router.use('/feedback', feedbackRoute(param));
 
     return router;
 }
