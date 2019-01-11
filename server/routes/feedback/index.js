@@ -3,22 +3,45 @@ const express = require('express');
 const router = express.Router();
 
 module.exports = (param) => {
+
     const { feedbackService } = param;
+
     router.get('/', async (req, res, next) => {
         try {
-            const feedbackList = await feedbackService.getList();
+            const feedbacklist = await feedbackService.getList();
             return res.render('feedback', {
                 page: 'Feedback',
-                feedbackList
+                feedbacklist,
+                success: req.query.success,
             });
         } catch (err) {
-            return next(err);
+            return err;
         }
     });
 
-    router.post('/', (req, res, next) => {
-        res.send('Form sent');
+    router.post('/', async (req, res, next) => {
+        try {
+            const fbName = req.body.fbName.trim();
+            const fbTitle = req.body.fbTitle.trim();
+            const fbMessage = req.body.fbMessage.trim();
+            const feedbacklist = await feedbackService.getList();
+            if (!fbName || !fbTitle || !fbMessage) {
+                return res.render('feedback', {
+                    page: 'Feedback',
+                    error: true,
+                    fbName,
+                    fbMessage,
+                    fbTitle,
+                    feedbacklist,
+                });
+            }
+            await feedbackService.addNewEntry(fbName, fbTitle, fbMessage);
+            return res.redirect('/feedback?success=true');
+        } catch (err) {
+            return next(err);
+        }
+
     });
 
     return router;
-}
+};

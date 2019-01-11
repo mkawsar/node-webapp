@@ -1,6 +1,7 @@
 const express = require('express');
 const createError = require('http-errors');
 const path = require('path');
+const bodyParser = require('body-parser');
 const configs = require('./config');
 const SpeakerService = require('./services/SpeakerService');
 const FeedbaclService = require('./services/FeedbackService');
@@ -11,6 +12,8 @@ const config = configs[app.get('env')];
 const speakerService = new SpeakerService(config.data.speakers);
 const feedbackService = new FeedbaclService(config.data.feedback);
 
+
+// Define view engine
 app.set('view engine', 'pug');
 if (app.get('env') === 'development') {
     app.locals.pretty = true;
@@ -20,10 +23,14 @@ app.locals.title = config.sitename;
 
 const routes = require('./routes');
 app.use(express.static('public'));
+
+app.use(bodyParser.urlencoded({ extended: true }));
+
 app.get('/favicon.ico', (req, res, next) => {
     return res.sendStatus(204);
 });
 
+// Get speakers list
 app.use(async (req, res, next) => {
     try {
         const names = await speakerService.getNames();
@@ -34,11 +41,13 @@ app.use(async (req, res, next) => {
     }
 });
 
+// Define routes modules
 app.use('/', routes({
     speakerService: speakerService,
     feedbackService: feedbackService,
 }));
 
+// Error handling when page not found
 app.use((req, res, next) => {
     return next(createError(404, 'File not found'));
 });
@@ -52,6 +61,7 @@ app.use((err, req, res, next) => {
     return res.render('error');
 });
 
+// Listening running port
 app.listen(9000, () => {
     console.log('Listen port is running on http://127.0.0.1:9000')
 });
