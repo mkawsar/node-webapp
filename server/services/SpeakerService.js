@@ -30,6 +30,46 @@ class SpeakerService {
         });
     }
 
+
+    async getAllArtwork() {
+        const data = await this.getData();
+        const artwork = data.reduce((acc, elm) => {
+            if (elm.artwork) {
+                acc = [...acc, ...elm.artwork];
+            }
+            return acc;
+        }, []);
+        return artwork;
+    }
+
+    async getSpeaker(shortname) {
+        const data = await this.getData();
+        const speaker = data.find((speaker) => {
+            return speaker.shortname === shortname;
+        });
+        if (!speaker) {
+            return null;
+        }
+
+        return {
+            title: speaker.title,
+            name: speaker.name,
+            shortname: speaker.shortname,
+            description: speaker.description,
+        }
+    }
+
+    async getArtworkForSpeaker(shortname) {
+        const data = await this.getData();
+        const speaker = data.find((speaker) => {
+            return speaker.shortname === shortname;
+        });
+        if (!speaker || !speaker.artwork) {
+            return null;
+        }
+        return speaker.artwork;
+    }
+
     async getData() {
         const data = await readFile(this.datafile, 'utf8');
         if (!data) return [];
